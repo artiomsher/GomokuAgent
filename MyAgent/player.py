@@ -8,7 +8,7 @@ class Player(GomokuAgent):
     
     def move(self, board):
         while True:
-           
+            print(isBeneficial(self, board, (5,5)))
             print("NOW IS PLAYER ", self.ID, " MOVE!!!\n")
             moveLoc = determineMove(self, board)#COMBINATION OF RANDOM AND NOT RANDOM MOVES
             if moveLoc == (-1,-1):
@@ -206,4 +206,15 @@ def isDecidedMove(coords):
     if coords == (-1,-1):
         return False
     else:
-        return True    
+        return True  
+
+def isBeneficial(self, board, moveLoc, id):
+    BOARD_SIZE = board.shape[0]
+    if moveLoc[0] < 0 or moveLoc[0] >= BOARD_SIZE or \
+       moveLoc[1] < 0 or moveLoc[1] >= BOARD_SIZE: 
+        return False
+
+    if board[moveLoc] == id:
+        return True
+    return False
+    
