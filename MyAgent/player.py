@@ -8,4 +8,5 @@ class Player(GomokuAgent):
         while True:
             moveLoc = tuple(np.random.randint(self.BOARD_SIZE, size=2))
             if legalMove(board, moveLoc):
+                print("SSSS")
                 return moveLoc
