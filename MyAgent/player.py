@@ -95,7 +95,6 @@ def boardValDiag(self, board, ID):
                 scores = 0
                 for i in range(self.X_IN_A_LINE - 1):
                     if c+i < BOARD_SIZE and r+i < BOARD_SIZE:
-                        
                         if board[r + i,c + i] == ID:
                             scores+=1
                             if scores == 4 or scores == 3:
@@ -105,10 +104,8 @@ def boardValDiag(self, board, ID):
                                     fig = ((row,col), (row + scores - 1, col - scores + 1))
 
                                 else: #HORIZONTAL
-
                                     row = r
                                     col = c
-
                                     fig = ((row,col), (row + scores - 1,col + scores - 1))
 
                                 if scores == 4: 
@@ -153,48 +150,47 @@ def check4InLine(board, fig4):
     nextMoveCoords = (-1,-1)
     for shape in fig4:
             
-            possibleLocs = getMovesOnEdgesForFig(board, shape)
+            possibleLocs = getMovesOnEdgesForFig(board, shape, 1)
                          
             if possibleLocs:
                 nextMoveCoords = possibleLocs[0]
     return nextMoveCoords   
 
-def getMovesOnEdgesForFig(board, figure):
+def getMovesOnEdgesForFig(board, figure, dist):
     possibleLocs = []
     y,x = figure[0]
     y1, x1 = figure[1]
     if x == x1:#if vertical
-        if legalMove(board,(y-1, x)):
-            possibleLocs.append((y - 1, x))
-        if legalMove(board,(y1+1, x)):
-            possibleLocs.append((y1 + 1, x))
+        if legalMove(board,(y - dist, x)):
+            possibleLocs.append((y - dist, x))
+        if legalMove(board,(y1 + dist, x)):
+            possibleLocs.append((y1 + dist, x))
                     
                     
     elif y == y1:#if horizontal
-        if legalMove(board,(y, x-1)):
-            possibleLocs.append((y, x - 1))
-        if legalMove(board,(y1, x1+1)):
-            possibleLocs.append((y1, x1 + 1))
+        if legalMove(board,(y, x - dist)):
+            possibleLocs.append((y, x - dist))
+        if legalMove(board,(y1, x1 + dist)):
+            possibleLocs.append((y1, x1 + dist))
                     
     elif abs(x1-x) == abs(y1-y):#IF DIAGONAL
         if x<x1 and y<y1:#left up to down bot
-            if legalMove(board,(y - 1, x - 1)):
-                possibleLocs.append((y - 1, x - 1))
-            if legalMove(board,(y1 + 1, x1 + 1)):
-                possibleLocs.append((y1 + 1, x1 + 1))
+            if legalMove(board,(y - dist, x - dist)):
+                possibleLocs.append((y - dist, x - dist))
+            if legalMove(board,(y1 + dist, x1 + dist)):
+                possibleLocs.append((y1 + dist, x1 + dist))
         else:#right up to left bot
-            if legalMove(board,(y - 1, x + 1)):
-                possibleLocs.append((y - 1, x + 1))
-            if legalMove(board,(y1 + 1, x1 - 1)):
-                possibleLocs.append((y1 + 1, x1 - 1))
+            if legalMove(board,(y - dist, x + dist)):
+                possibleLocs.append((y - dist, x + dist))
+            if legalMove(board,(y1 + dist, x1 - dist)):
+                possibleLocs.append((y1 + dist, x1 - dist))
     return possibleLocs                    
 
 def checkFigs3(board, fig3):
     suggestedMoves = []
     allPossibleLocs = []
     for fig in fig3:
-        allPossibleLocs.append(getMovesOnEdgesForFig(board, fig))
-
+        allPossibleLocs.append(getMovesOnEdgesForFig(board, fig, 1))
     print("POSSIBLE MOVES",allPossibleLocs)                    
     if suggestedMoves:
         return suggestedMoves
@@ -213,7 +209,6 @@ def isBeneficial(self, board, moveLoc, id):
     if moveLoc[0] < 0 or moveLoc[0] >= BOARD_SIZE or \
        moveLoc[1] < 0 or moveLoc[1] >= BOARD_SIZE: 
         return False
-
     if board[moveLoc] == id:
         return True
     return False
