@@ -153,39 +153,39 @@ def check4InLine(board, fig4):
     nextMoveCoords = (-1,-1)
     for shape in fig4:
             
-            possibleLocs = getPossibleMovesForFig(board, shape)
+            possibleLocs = getMovesOnEdgesForFig(board, shape)
                          
             if possibleLocs:
                 nextMoveCoords = possibleLocs[0]
     return nextMoveCoords   
 
-def getPossibleMovesForFig(board, figure):
+def getMovesOnEdgesForFig(board, figure):
     possibleLocs = []
     y,x = figure[0]
     y1, x1 = figure[1]
     if x == x1:#if vertical
         if legalMove(board,(y-1, x)):
             possibleLocs.append((y - 1, x))
-        elif legalMove(board,(y1+1, x)):
+        if legalMove(board,(y1+1, x)):
             possibleLocs.append((y1 + 1, x))
                     
                     
     elif y == y1:#if horizontal
         if legalMove(board,(y, x-1)):
             possibleLocs.append((y, x - 1))
-        elif legalMove(board,(y1, x1+1)):
+        if legalMove(board,(y1, x1+1)):
             possibleLocs.append((y1, x1 + 1))
                     
     elif abs(x1-x) == abs(y1-y):#IF DIAGONAL
         if x<x1 and y<y1:#left up to down bot
             if legalMove(board,(y - 1, x - 1)):
                 possibleLocs.append((y - 1, x - 1))
-            elif legalMove(board,(y1 + 1, x1 + 1)):
+            if legalMove(board,(y1 + 1, x1 + 1)):
                 possibleLocs.append((y1 + 1, x1 + 1))
         else:#right up to left bot
             if legalMove(board,(y - 1, x + 1)):
                 possibleLocs.append((y - 1, x + 1))
-            elif legalMove(board,(y1 + 1, x1 - 1)):
+            if legalMove(board,(y1 + 1, x1 - 1)):
                 possibleLocs.append((y1 + 1, x1 - 1))
     return possibleLocs                    
 
@@ -193,7 +193,7 @@ def checkFigs3(board, fig3):
     suggestedMoves = []
     allPossibleLocs = []
     for fig in fig3:
-        allPossibleLocs.append(getPossibleMovesForFig(board, fig))
+        allPossibleLocs.append(getMovesOnEdgesForFig(board, fig))
 
     print("POSSIBLE MOVES",allPossibleLocs)                    
     if suggestedMoves:
