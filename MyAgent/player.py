@@ -131,7 +131,7 @@ def boardValDiag(self, board, ID):
 
 def determineMove(self, board):
     nextMoveCoords = (-1,-1)
-    suggestedMove = []
+    suggestedMoves = []
     ally3, ally4 = readBoard(self, board, self.ID)
     enemy3, enemy4 = readBoard(self, board, -self.ID)
     print("Ally:",ally3, ally4)
@@ -141,10 +141,10 @@ def determineMove(self, board):
         nextMoveCoords = check4InLine(board, ally4)
     if enemy4 and not isDecidedMove(nextMoveCoords):# if the move is not decided yet and enemy can potentially win next move, need to prevent
         nextMoveCoords = check4InLine(board, enemy4)    
-        print("Prevented")
+        #print("Prevented", nextMoveCoords)
     if ally3 and not isDecidedMove(nextMoveCoords):
 
-        nextMoveCoords = checkFigs3(board, ally4)   
+        suggestedMoves = checkFigs3(board, ally3)   
 
     return nextMoveCoords
        
@@ -152,76 +152,56 @@ def determineMove(self, board):
 def check4InLine(board, fig4):
     nextMoveCoords = (-1,-1)
     for shape in fig4:
-            y,x = shape[0]
-            y1, x1 = shape[1]
-            possibleLocs = []
-            if x == x1:
-                if legalMove(board,(y-1, x)):
-                    possibleLocs.append((y - 1, x))
-                elif legalMove(board,(y1+1, x)):
-                    possibleLocs.append((y1 + 1, x))
-                    
-                    
-            elif y == y1:
-                if legalMove(board,(y, x-1)):
-                    possibleLocs.append((y, x - 1))
-                elif legalMove(board,(y1, x1+1)):
-                    possibleLocs.append((y1, x1 + 1))
-                    
-            elif abs(x1-x) == abs(y1-y):#IF DIAGONAL
-                if x<x1 and y<y1:
-                    if legalMove(board,(y - 1, x - 1)):
-                        possibleLocs.append((y - 1, x - 1))
-                    elif legalMove(board,(y1 + 1, x1 + 1)):
-                        possibleLocs.append((y1 + 1, x1 + 1))
-                else:
-                    if legalMove(board,(y - 1, x + 1)):
-                        possibleLocs.append((y - 1, x + 1))
-                    elif legalMove(board,(y1 + 1, x1 - 1)):
-                        possibleLocs.append((y1 + 1, x1 - 1))
-                        
+            
+            possibleLocs = getPossibleMovesForFig(board, shape)
+                         
             if possibleLocs:
                 nextMoveCoords = possibleLocs[0]
     return nextMoveCoords   
 
-def checkFigs3(board, ally4):
-    return (-1,-1)
+def getPossibleMovesForFig(board, figure):
+    possibleLocs = []
+    y,x = figure[0]
+    y1, x1 = figure[1]
+    if x == x1:#if vertical
+        if legalMove(board,(y-1, x)):
+            possibleLocs.append((y - 1, x))
+        elif legalMove(board,(y1+1, x)):
+            possibleLocs.append((y1 + 1, x))
+                    
+                    
+    elif y == y1:#if horizontal
+        if legalMove(board,(y, x-1)):
+            possibleLocs.append((y, x - 1))
+        elif legalMove(board,(y1, x1+1)):
+            possibleLocs.append((y1, x1 + 1))
+                    
+    elif abs(x1-x) == abs(y1-y):#IF DIAGONAL
+        if x<x1 and y<y1:#left up to down bot
+            if legalMove(board,(y - 1, x - 1)):
+                possibleLocs.append((y - 1, x - 1))
+            elif legalMove(board,(y1 + 1, x1 + 1)):
+                possibleLocs.append((y1 + 1, x1 + 1))
+        else:#right up to left bot
+            if legalMove(board,(y - 1, x + 1)):
+                possibleLocs.append((y - 1, x + 1))
+            elif legalMove(board,(y1 + 1, x1 - 1)):
+                possibleLocs.append((y1 + 1, x1 - 1))
+    return possibleLocs                    
 
-def checkEnemy4(board, enemy4):
-    nextMoveCoords = (-1,-1)
-    for shape in enemy4:
-            y,x = shape[0]
-            y1, x1 = shape[1]
-            possibleLocs = []
-            if x == x1:
-                if legalMove(board,(y-1, x)):
-                    possibleLocs.append((y - 1, x))
-                elif legalMove(board,(y1+1, x)):
-                    possibleLocs.append((y1 + 1, x))
-                    
-                    
-            elif y == y1:
-                if legalMove(board,(y, x-1)):
-                    possibleLocs.append((y, x - 1))
-                elif legalMove(board,(y1, x1+1)):
-                    possibleLocs.append((y1, x1 + 1))
-                    
-            elif abs(x1-x) == abs(y1-y):#IF DIAGONAL
-                if x<x1 and y<y1:
-                    if legalMove(board,(y - 1, x - 1)):
-                        possibleLocs.append((y - 1, x - 1))
-                    elif legalMove(board,(y1 + 1, x1 + 1)):
-                        possibleLocs.append((y1 + 1, x1 + 1))
-                else:
-                    if legalMove(board,(y - 1, x + 1)):
-                        possibleLocs.append((y - 1, x + 1))
-                    elif legalMove(board,(y1 + 1, x1 - 1)):
-                        possibleLocs.append((y1 + 1, x1 - 1))
-                        
-            if possibleLocs:
-                nextMoveCoords = possibleLocs[0]
-    return nextMoveCoords   
-    return nextMoveCoords
+def checkFigs3(board, fig3):
+    suggestedMoves = []
+    allPossibleLocs = []
+    for fig in fig3:
+        allPossibleLocs.append(getPossibleMovesForFig(board, fig))
+
+    print("POSSIBLE MOVES",allPossibleLocs)                    
+    if suggestedMoves:
+        return suggestedMoves
+    else:
+        return (-1,-1)    
+
+
 def isDecidedMove(coords):
     if coords == (-1,-1):
         return False
