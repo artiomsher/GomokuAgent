@@ -8,7 +8,7 @@ class Player(GomokuAgent):
     
     def move(self, board):
         while True:
-           
+            #print(isBeneficial(self, board, (5,5)))
             print("NOW IS PLAYER ", self.ID, " MOVE!!!\n")
             moveLoc = determineMove(self, board)#COMBINATION OF RANDOM AND NOT RANDOM MOVES
             if moveLoc == (-1,-1):
