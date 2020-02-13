@@ -139,7 +139,19 @@ def determineMove(self, board):
     print("Enemy:",enemy3, enemy4)
     
     if ally4:#DETERMINE LAST MOVE TO WIN IF POSSIBLE
-        for shape in ally4:
+        nextMoveCoords = finish4InLine(board, ally4)
+    if enemy4 and not isDecidedMove(nextMoveCoords):# if the move is not decided yet and enemy can potentially win next move, need to prevent
+        nextMoveCoords = checkEnemy4(board, enemy4)    
+    if ally3 and not isDecidedMove(nextMoveCoords):
+
+        nextMoveCoords = checkFigs3(board, ally4)   
+
+    return nextMoveCoords
+       
+
+def finish4InLine(board, ally4):
+    nextMoveCoords = (-1,-1)
+    for shape in ally4:
             y,x = shape[0]
             y1, x1 = shape[1]
             possibleLocs = []
@@ -170,6 +182,16 @@ def determineMove(self, board):
                         
             if possibleLocs:
                 nextMoveCoords = possibleLocs[0]
+    return nextMoveCoords   
+
+def checkFigs3(board, ally4):
+    return (-1,-1)
+
+def checkEnemy4(board, enemy4):
+    nextMoveCoords = (-1,-1)
+    return nextMoveCoords
+def isDecidedMove(coords):
+    if coords == (-1,-1):
+        return False
     else:
-        print(nextMoveCoords)
-    return nextMoveCoords    
+        return True    
