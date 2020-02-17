@@ -170,8 +170,13 @@ def determineMove(self, board):
         #print("Prevented", nextMoveCoords)
     if ally3 and not isDecidedMove(nextMoveCoords):
 
-        suggestedMoves = checkFigs3(board, ally3)   
-
+        #suggested = checkFigs3(board, ally3)[0]
+        #if isDecidedMove(suggested):
+            #suggestedMoves.append(suggested)   
+        nextMoveCoords = checkFigs3(board, ally3)    
+    
+    #if not isDecidedMove(nextMoveCoords) and suggestedMoves:
+        #nextMoveCoords = suggestedMoves[0]
     return nextMoveCoords
        
 
@@ -216,22 +221,29 @@ def getMovesOnEdgesForFig(board, figure, dist, id):
     return possibleLocs                    
 
 def checkFigs3(board, fig3):
-    suggestedMoves = []
-    allPossibleLocs = []
+    suggestedMoves = (-1,-1)
+
+    allPossibleLocs3To4 = []
+
     for fig in fig3:
+        toCombineSplitted = checkSplitted(board, fig, 1)
+        if isDecidedMove(toCombineSplitted):
+            suggestedMoves = toCombineSplitted
+        
         newPossibleLocs = getMovesOnEdgesForFig(board, fig, 1, 0)
         if newPossibleLocs:
-            allPossibleLocs.append(getMovesOnEdgesForFig(board, fig, 1, 0))
+            allPossibleLocs3To4.append(getMovesOnEdgesForFig(board, fig, 1, 0))
 
-    print("POSSIBLE MOVES",allPossibleLocs)                    
+    print("POSSIBLE MOVES 3 to 4",allPossibleLocs3To4)                    
     if suggestedMoves:
         return suggestedMoves
+        print("SPLITTED COMBINED")
     else:
-        return (-1,-1)    
+        return (-1,-1) 
 
 
 def isDecidedMove(coords):
-    if coords == (-1,-1):
+    if coords == (-1,-1) or coords == []:
         return False
     else:
         return True    
@@ -245,3 +257,16 @@ def isBeneficial(board, moveLoc, id):
     if board[moveLoc] == id:
         return True
     return False
+
+def checkSplitted(board, figure, id):
+    coordsToCombine = (-1, -1)
+    y,x = figure[0]
+    y1,x1 = figure[1]
+    afterGap = getMovesOnEdgesForFig(board, figure, 2, id)
+    if afterGap:
+        gap = getMovesOnEdgesForFig(board, figure, 1, 0)
+        if gap and afterGap:
+            coordsToCombine = gap[0]
+            print("after 1 is:", coordsToCombine)    
+
+    return coordsToCombine
