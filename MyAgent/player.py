@@ -12,13 +12,13 @@ class Player(GomokuAgent):
             print("NOW IS PLAYER ", self.ID, " MOVE!!!\n")
             moveLoc = determineMove(self, board)#COMBINATION OF RANDOM AND NOT RANDOM MOVES
             if moveLoc == (-1,-1):
-                print("random move")
+                #print("random move")
                 moveLoc = tuple(np.random.randint(self.BOARD_SIZE, size=2))
-            else:
-                print("NOT RANDOM MOVE")
+            #else:
+                #print("NOT RANDOM MOVE")
                 
             if legalMove(board, moveLoc):
-                print("NEW FIGURE ADDED:::::::::", moveLoc)
+                #print("NEW FIGURE ADDED:::::::::", moveLoc)
                 return moveLoc
 
 def readBoard(self, board, ID):
@@ -31,6 +31,17 @@ def readBoard(self, board, ID):
     figures3 = figs3VH+figs3Diag
     figures4 = figs4VH+figs4Diag
 
+    priorityValid2, normalValid2 = isPotentialWin(board, figures2, 2, ID)
+    priorityValid3, normalValid3 = isPotentialWin(board, figures3, 3, ID)
+    priorityValid4, normalValid4 = isPotentialWin(board, figures4, 4, ID)
+
+    priorityValid = priorityValid4 + priorityValid3 + priorityValid2
+    normalValid = normalValid4 + normalValid3 + normalValid2
+
+    print("PRIORITY:  ", priorityValid)
+    print("NORMAL:  ", normalValid)
+    #print("AVAILABLE FOR WIN3: ", isPotentialWin(board, figures3, 3, ID))
+    #print("AVAILABLE FOR WIN2: ", isPotentialWin(board, figures2, 2, ID))
     #print("Figures2: ", figures2)
     #print("Figures3: ", figures3)
     #print("Figures4: ", figures4)
@@ -160,8 +171,8 @@ def determineMove(self, board):
     suggestedMoves = []
     ally2, ally3, ally4 = readBoard(self, board, self.ID)
     enemy2, enemy3, enemy4 = readBoard(self, board, -self.ID)
-    print("Ally:",ally2, ally3, ally4)
-    print("Enemy:",enemy2, enemy3, enemy4)
+    #print("Ally:",ally2, ally3, ally4)
+    #print("Enemy:",enemy2, enemy3, enemy4)
     
     if ally4:#DETERMINE LAST MOVE TO WIN IF POSSIBLE
         nextMoveCoords = check4InLine(board, ally4)
@@ -184,41 +195,42 @@ def check4InLine(board, fig4):
     nextMoveCoords = (-1,-1)
     for shape in fig4:
             
-            possibleLocs = getMovesOnEdgesForFig(board, shape, 1, 0)
-                         
+            possibleLocsL, possibleLocsR = getMovesOnEdgesForFig(board, shape, 1, 0)
+            possibleLocs = possibleLocsL + possibleLocsR             
             if possibleLocs:
                 nextMoveCoords = possibleLocs[0]
     return nextMoveCoords   
 
 def getMovesOnEdgesForFig(board, figure, dist, id):
-    possibleLocs = []
+    possibleLocsLeft = []
+    possibleLocsRight = []
     y,x = figure[0]
     y1, x1 = figure[1]
     if x == x1:#if vertical
         if isBeneficial(board,(y-dist, x), id):
-            possibleLocs.append((y - dist, x))
+            possibleLocsLeft.append((y - dist, x))
         if isBeneficial(board,(y1+dist, x), id):
-            possibleLocs.append((y1 + dist, x))
+            possibleLocsRight.append((y1 + dist, x))
                     
                     
     elif y == y1:#if horizontal
         if isBeneficial(board,(y, x-dist), id):
-            possibleLocs.append((y, x - dist))
+            possibleLocsLeft.append((y, x - dist))
         if isBeneficial(board,(y1, x1+dist), id):
-            possibleLocs.append((y1, x1 + dist))
+            possibleLocsRight.append((y1, x1 + dist))
                     
     elif abs(x1-x) == abs(y1-y):#IF DIAGONAL
         if x<x1 and y<y1:#left up to down bot
             if isBeneficial(board,(y - dist, x - dist), id):
-                possibleLocs.append((y - dist, x - dist))
+                possibleLocsLeft.append((y - dist, x - dist))
             if isBeneficial(board,(y1 + dist, x1 + dist), id):
-                possibleLocs.append((y1 + dist, x1 + dist))
+                possibleLocsRight.append((y1 + dist, x1 + dist))
         else:#right up to left bot
             if isBeneficial(board,(y - dist, x + dist), id):
-                possibleLocs.append((y - dist, x + dist))
+                possibleLocsLeft.append((y - dist, x + dist))
             if isBeneficial(board,(y1 + dist, x1 - dist), id):
-                possibleLocs.append((y1 + dist, x1 - dist))
-    return possibleLocs                    
+                possibleLocsRight.append((y1 + dist, x1 - dist))
+    return possibleLocsLeft, possibleLocsRight                  
 
 def checkFigs3(board, fig3):
     suggestedMoves = (-1,-1)
@@ -230,14 +242,15 @@ def checkFigs3(board, fig3):
         if isDecidedMove(toCombineSplitted):
             suggestedMoves = toCombineSplitted
         
-        newPossibleLocs = getMovesOnEdgesForFig(board, fig, 1, 0)
+        newPossibleLocsL, newPossibleLocsR = getMovesOnEdgesForFig(board, fig, 1, 0)
+        newPossibleLocs = newPossibleLocsL + newPossibleLocsR
         if newPossibleLocs:
-            allPossibleLocs3To4.append(getMovesOnEdgesForFig(board, fig, 1, 0))
+            allPossibleLocs3To4.append(newPossibleLocs)
 
-    print("POSSIBLE MOVES 3 to 4",allPossibleLocs3To4)                    
+    #print("POSSIBLE MOVES 3 to 4",allPossibleLocs3To4)                    
     if suggestedMoves:
         return suggestedMoves
-        print("SPLITTED COMBINED")
+        #print("SPLITTED COMBINED")
     else:
         return (-1,-1) 
 
@@ -250,8 +263,7 @@ def isDecidedMove(coords):
 
 def isBeneficial(board, moveLoc, id):
     BOARD_SIZE = board.shape[0]
-    if moveLoc[0] < 0 or moveLoc[0] >= BOARD_SIZE or \
-       moveLoc[1] < 0 or moveLoc[1] >= BOARD_SIZE: 
+    if moveLoc[0] < 0 or moveLoc[0] >= BOARD_SIZE or moveLoc[1] < 0 or moveLoc[1] >= BOARD_SIZE: 
         return False
 
     if board[moveLoc] == id:
@@ -262,11 +274,95 @@ def checkSplitted(board, figure, id):
     coordsToCombine = (-1, -1)
     y,x = figure[0]
     y1,x1 = figure[1]
-    afterGap = getMovesOnEdgesForFig(board, figure, 2, id)
+    afterGapL, afterGapR = getMovesOnEdgesForFig(board, figure, 2, id)
+    afterGap = afterGapL+afterGapR
     if afterGap:
-        gap = getMovesOnEdgesForFig(board, figure, 1, 0)
+        gapL, gapR = getMovesOnEdgesForFig(board, figure, 1, 0)
+        gap = gapL + gapR
         if gap and afterGap:
             coordsToCombine = gap[0]
-            print("after 1 is:", coordsToCombine)    
+            #print("after 1 is:", coordsToCombine)    
 
     return coordsToCombine
+
+def isPotentialWin(board, figures, len, id):
+    toReturnNormal = []
+    toReturnPriority = []
+    
+    for fig in figures:
+        #if fi is 4
+        if len==4:
+            moveForFig5L, moveForFig5R = getMovesOnEdgesForFig(board, fig, 1, 0)
+            moveForFig5 = moveForFig5L + moveForFig5R
+            if moveForFig5 != []:
+                toReturnPriority.append(fig)
+        if len == 3:    
+            moveForFig4L, moveForFig4R = getMovesOnEdgesForFig(board, fig, 1, 0)
+            moveForFig5L, moveForFig5R = getMovesOnEdgesForFig(board, fig, 2, 0)
+            moveForFig5LSelf, moveForFig5RSelf = getMovesOnEdgesForFig(board, fig, 2, id)
+            
+            if (
+                (moveForFig4R and moveForFig5RSelf) or                  # 1 1 1 0 1
+                (moveForFig4L and moveForFig5LSelf) or                  # 1 0 1 1 1 
+
+                (moveForFig4L and moveForFig5L and moveForFig4R) or     # 0 0 1 1 1 0 
+                (moveForFig4L and moveForFig4R and moveForFig5R)):      # 0 1 1 1 0 0
+                    toReturnPriority.append(fig)
+            
+            elif (
+                (moveForFig4L and moveForFig5L) or                      # 0 0 1 1 1
+                (moveForFig4R and moveForFig5R) or                      # 1 1 1 0 0 
+            
+                (moveForFig4L and moveForFig4R)):                       # 0 1 1 1 0
+                toReturnNormal.append(fig)
+
+        if len == 2:
+            moveForFig3L, moveForFig3R = getMovesOnEdgesForFig(board, fig, 1, 0)#3rd empty
+            moveForFig4L, moveForFig4R = getMovesOnEdgesForFig(board, fig, 2, 0)#4th empty
+            moveForFig4LSelf, moveForFig4RSelf = getMovesOnEdgesForFig(board, fig, 2, id)#4th ally
+            moveForFig5L, moveForFig5R = getMovesOnEdgesForFig(board, fig, 3, 0)#5th empty
+            moveForFig5LSelf, moveForFig5RSelf = getMovesOnEdgesForFig(board, fig, 3, id)#5th ally
+
+            if ((moveForFig3L and moveForFig4LSelf and moveForFig5LSelf) or #1 1 0 1 1 
+                (moveForFig3R and moveForFig4RSelf and moveForFig5RSelf)):   #1 1 0 1 1 
+                 toReturnPriority.append(fig)
+
+            if ((moveForFig3L and moveForFig4L and moveForFig5L) or # 0 0 0 1 1 
+            (moveForFig3L and moveForFig4L and moveForFig5LSelf) or # 1 0 0 1 1 
+            (moveForFig3L and moveForFig4LSelf and moveForFig5L) or # 0 1 0 1 1 
+            
+
+            (moveForFig3R and moveForFig4R and moveForFig5R) or #1 1 0 0 0 
+            (moveForFig3R and moveForFig4R and moveForFig5RSelf) or #1 1 0 0 1 
+            (moveForFig3R and moveForFig4RSelf and moveForFig5R) or#1 1 0 1 0 
+            
+
+            (moveForFig3L and moveForFig3R and moveForFig4R) or#0 1 1 0 0 
+            (moveForFig3L and moveForFig4L and moveForFig3R)):#0 0 1 1 0
+                toReturnNormal.append(fig)
+        
+        
+        
+        
+    return toReturnPriority, toReturnNormal     
+#         if len(fig) == 4:
+#             x,y = fig[0]#start
+#             x1,y1 = fig[1]#end
+#             if x==x1:
+#                 if board[x,y-1] == 0 or board[x,y1+1]==0:
+#                     toReturn.append(fig)
+#                     print("HERE")
+#             elif y==y1:
+#                 if board[x-1,y] == 0 or board[x1+1,y]==0:
+#                     toReturn.append(fig)
+#                     print("HERE")
+#             elif abs(x1-x) == abs(y1-y):#IF DIAGONAL
+#                 if x<x1 and y<y1:#left up to down bot
+#                     if board[x-1, y-1] == 0 or board[x1+1,y1+1]==0:
+#                         toReturn.append(fig)
+#                 else:#right up to left bot
+#                     if board[x-1, y+1] == 0 or board[x1+1,y1-1]==0:
+#                         toReturn.append(fig)
+#     return toReturn
+
+
