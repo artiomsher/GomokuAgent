@@ -8,8 +8,9 @@ class Player(GomokuAgent):
     
     def move(self, board):
         while True:
-            #print(isBeneficial(self, board, (5,5)))
+            
             print("NOW IS PLAYER ", self.ID, " MOVE!!!\n")
+            print(getHeuristics(self, board))
             moveLoc = determineMove(self, board)#COMBINATION OF RANDOM AND NOT RANDOM MOVES
             if moveLoc == (-1,-1):
                 #print("random move")
@@ -171,8 +172,7 @@ def determineMove(self, board):
     suggestedMoves = []
     ally2, ally3, ally4 = readBoard(self, board, self.ID)
     enemy2, enemy3, enemy4 = readBoard(self, board, -self.ID)
-    #print("Ally:",ally2, ally3, ally4)
-    #print("Enemy:",enemy2, enemy3, enemy4)
+
     
     if ally4:#DETERMINE LAST MOVE TO WIN IF POSSIBLE
         nextMoveCoords = check4InLine(board, ally4)
@@ -345,24 +345,53 @@ def isPotentialWin(board, figures, len, id):
         
         
     return toReturnPriority, toReturnNormal     
-#         if len(fig) == 4:
-#             x,y = fig[0]#start
-#             x1,y1 = fig[1]#end
-#             if x==x1:
-#                 if board[x,y-1] == 0 or board[x,y1+1]==0:
-#                     toReturn.append(fig)
-#                     print("HERE")
-#             elif y==y1:
-#                 if board[x-1,y] == 0 or board[x1+1,y]==0:
-#                     toReturn.append(fig)
-#                     print("HERE")
-#             elif abs(x1-x) == abs(y1-y):#IF DIAGONAL
-#                 if x<x1 and y<y1:#left up to down bot
-#                     if board[x-1, y-1] == 0 or board[x1+1,y1+1]==0:
-#                         toReturn.append(fig)
-#                 else:#right up to left bot
-#                     if board[x-1, y+1] == 0 or board[x1+1,y1-1]==0:
-#                         toReturn.append(fig)
-#     return toReturn
 
+def getHeuristics(self, board):
+    figs2VH, figs3VH, figs4VH = boardValRow(self, board, self.ID)#GET figures of specified player horizonta and vertical
+    figs2Diag, figs3Diag, figs4Diag = boardValDiag(self, board, self.ID)#DIagonal
+    
+    figures2 = figs2VH+figs2Diag#combination of vert and horizontal fig, separated by its length
+    figures3 = figs3VH+figs3Diag
+    figures4 = figs4VH+figs4Diag
 
+    priorityValid2, normalValid2 = isPotentialWin(board, figures2, 2, self.ID)
+    priorityValid3, normalValid3 = isPotentialWin(board, figures3, 3, self.ID)
+    priorityValid4, normalValid4 = isPotentialWin(board, figures4, 4, self.ID)
+
+    #priorityValid = priorityValid4 + priorityValid3 + priorityValid2
+    #normalValid = normalValid4 + normalValid3 + normalValid2
+    fig4Value = 0
+    fig3ValueP = 0
+    fig3ValueN = 0
+    fig2ValueP = 0
+    fig2ValueN = 0
+    finalValue = 0
+    
+    if (priorityValid4 or priorityValid3 or priorityValid2):
+
+        VALUE_4 = 100
+        VALUE_3_P = 100
+        VALUE_3_N = 25
+        VALUE_2_P = 100
+        VALUE_2_N = 10
+    else:
+        VALUE_4 = 100
+        VALUE_3_P = 100
+        VALUE_3_N = 30
+        VALUE_2_P = 100
+        VALUE_2_N = 5
+    
+    for fig in priorityValid4:
+        fig4Value = fig4Value + VALUE_4
+    for fig in priorityValid3:
+        fig3ValueP = fig3ValueP + VALUE_3_P    
+    for fig in normalValid3:
+        fig3ValueN = fig3ValueN + VALUE_3_N 
+    for fig in priorityValid2:
+        fig2ValueP = fig2ValueP + VALUE_2_P
+    for fig in normalValid2:
+        fig2ValueN = fig2ValueN + VALUE_2_N        
+
+    finalValueFig = fig4Value + fig3ValueP + fig3ValueN + fig2ValueP + fig2ValueN
+
+    return finalValueFig
