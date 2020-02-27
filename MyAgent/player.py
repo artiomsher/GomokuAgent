@@ -21,32 +21,66 @@ class Player(GomokuAgent):
             if legalMove(board, moveLoc):
                 #print("NEW FIGURE ADDED:::::::::", moveLoc)
                 return moveLoc
-
-def readBoard(self, board, ID):
-    BOARD_SIZE = board.shape[0]
+                
+    # Python3 program to demonstrate  
+# working of Alpha-Beta Pruning  
+  
+# Initial values of Aplha and Beta  
+MAX, MIN = 1000, -1000 
+numberOfChildren = 2
+# Returns optimal value for current player  
+#(Initially called for root and maximizer)  
+def minimax(depth, nodeIndex, maximizingPlayer,  
+            values, alpha, beta, numberOfChildren):  
     
-    figs2VH, figs3VH, figs4VH = boardValRow(self, board, ID)#GET figures of specified player horizonta and vertical
-    figs2Diag, figs3Diag, figs4Diag = boardValDiag(self, board, ID)#DIagonal
-    
-    figures2 = figs2VH+figs2Diag#combination of vert and horizontal fig, separated by its length
-    figures3 = figs3VH+figs3Diag
-    figures4 = figs4VH+figs4Diag
-
-    priorityValid2, normalValid2 = isPotentialWin(board, figures2, 2, ID)
-    priorityValid3, normalValid3 = isPotentialWin(board, figures3, 3, ID)
-    priorityValid4, normalValid4 = isPotentialWin(board, figures4, 4, ID)
-
-    priorityValid = priorityValid4 + priorityValid3 + priorityValid2
-    normalValid = normalValid4 + normalValid3 + normalValid2
-
-    print("PRIORITY:  ", priorityValid)
-    print("NORMAL:  ", normalValid)
-    #print("AVAILABLE FOR WIN3: ", isPotentialWin(board, figures3, 3, ID))
-    #print("AVAILABLE FOR WIN2: ", isPotentialWin(board, figures2, 2, ID))
-    #print("Figures2: ", figures2)
-    #print("Figures3: ", figures3)
-    #print("Figures4: ", figures4)
-    return figures2, figures3, figures4
+    # Terminating condition. i.e  
+    # leaf node is reached  
+    if depth == 3:  
+        return values[nodeIndex]  
+  
+    if maximizingPlayer:  
+       
+        best = MIN 
+  
+        # Recur for left and right children  
+        for i in range(0, numberOfChildren):  
+            print(numberOfChildren)
+            val = minimax(depth + 1, nodeIndex * 2 + i,  
+                          False, values, alpha, beta, numberOfChildren - 1)  
+            best = max(best, val)  
+            alpha = max(alpha, best)  
+            
+            # Alpha Beta Pruning  
+            if beta <= alpha:  
+                break 
+           
+        return best  
+       
+    else: 
+        best = MAX 
+  
+        # Recur for left and  
+        # right children  
+        for i in range(0, numberOfChildren):  
+            print(numberOfChildren)
+            val = minimax(depth + 1, nodeIndex * 2 + i,  
+                            True, values, alpha, beta, numberOfChildren - 1)  
+            best = min(best, val)  
+            beta = min(beta, best)  
+  
+            # Alpha Beta Pruning  
+            if beta <= alpha:  
+                break 
+           
+        return best  
+       
+# Driver Code  
+if __name__ == "__main__":  
+   
+    values = [3, 5, 6, 9, 1, 2, 0, -1]   
+    print("The optimal value is :", minimax(0, 0, True, values, MIN, MAX, numberOfChildren - 1))  
+      
+# This code is contributed by Rituraj Jain 
 
 def boardValRow(self, board, ID):
     figures2 = []
