@@ -442,4 +442,14 @@ def getHeuristics(self, board):
     finalValueFigEnemy = fig4ValueEnemy + fig3ValuePEnemy + fig3ValueNEnemy + fig2ValuePEnemy + fig2ValueNEnemy
     finalValueFig = finalValueFig + borderValue
     finalValueFigEnemy = finalValueFigEnemy + borderValueEnemy
+    border(board)
     return finalValueFig
+
+def border(board):
+    counter = 0
+    # (3,3) - (3,7)
+    for i in range (3,8):
+        for j in range (3,8):
+            if(board[i,j] != 1 and board[i,j] != -1):
+                counter += 1
+    return counter
