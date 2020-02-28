@@ -2,21 +2,23 @@ import numpy as np
 
 from misc import legalMove
 from gomokuAgent import GomokuAgent
-
+from misc import winningTest
 
 class Player(GomokuAgent):
     
     def move(self, board):
 
         while True:
-            
+            print("H now: ",getHeuristics(self, board))
             print("NOW IS PLAYER ", self.ID, " MOVE!!!\n")
-           
+
             moveLoc = determineMove(self, board)#COMBINATION OF RANDOM AND NOT RANDOM MOVES
+            print("HEURISTICS to be Done:", moveLoc)
+            #print("NEXT MOVE: ", moveLoc)
             #if moveLoc == (-1,-1):
                 #print("random move")
-            moveLoc = tuple(np.random.randint(self.BOARD_SIZE, size=2))
-            print("NEW CELL ON: ", moveLoc)
+            #moveLoc = tuple(np.random.randint(self.BOARD_SIZE, size=2))
+            #print("NEW CELL ON: ", moveLoc)
             #else:
                 #print("NOT RANDOM MOVE")
                 
@@ -26,64 +28,85 @@ class Player(GomokuAgent):
                 
     # Python3 program to demonstrate  
 # working of Alpha-Beta Pruning  
-  
+def getMoveCoords(self, board1, board2):
+    for i in range(self.BOARD_SIZE):
+        for j in range(self.BOARD_SIZE):
+            if board1[i][j] != board2[i][j]:
+                return (i,j)
+
 # Initial values of Aplha and Beta  
-MAX, MIN = 1000, -1000 
-numberOfChildren = 2
+MAX, MIN = 1000000, -1000000
+numberOfChildren = 121
 # Returns optimal value for current player  
 #(Initially called for root and maximizer)  
-def minimax(depth, nodeIndex, id,  
-            values, alpha, beta, numberOfChildren):  
-    
+def minimax(node, depth, nodeIndex, maximizingPlayer,  
+            alpha, beta, self):  
+   
     # Terminating condition. i.e  
     # leaf node is reached  
     if depth == 3:  
-        return values[nodeIndex]  
+        heuristics = getHeuristics(self, node.board)
+        return heuristics, node 
   
-    if id == 1:  
-       
+    if maximizingPlayer:  
+        nodeToReturn = node
         best = MIN 
-  
-        # Recur for left and right children  
-        for i in range(0, numberOfChildren):  
-            print(numberOfChildren)
-            val = minimax(depth + 1, nodeIndex * 2 + i,  
-                          -1, values, alpha, beta, numberOfChildren - 1)  
+        children = getAllChildren(node, self.ID)
+        i = 0
+        for child in children: 
+            val, processedNode = minimax(child, depth + 1, nodeIndex * 2 + i,  
+                False, alpha, beta, self)  
+            oldBest = best    
             best = max(best, val)  
-            alpha = max(alpha, best)  
-            
-            # Alpha Beta Pruning  
+            alpha = max(alpha, best) 
+            if oldBest != best:#if the child changes values, return it
+                nodeToReturn = processedNode 
+            i = i + 1
+                    # Alpha Beta Pruning  
             if beta <= alpha:  
                 break 
-           
-        return best  
+        return best, nodeToReturn
        
     else: 
+        nodeToReturn = node
         best = MAX 
   
         # Recur for left and  
         # right children  
-        for i in range(0, numberOfChildren):  
-            print(numberOfChildren)
-            val = minimax(depth + 1, nodeIndex * 2 + i,  
-                            1, values, alpha, beta, numberOfChildren - 1)  
+        children = getAllChildren(node, -self.ID)
+        i = 0
+        for child in children:   
+            val, processedNode = minimax(child, depth + 1, nodeIndex * 2 + i,  
+                True, alpha, beta, self)  
+            oldBest = best    
             best = min(best, val)  
             beta = min(beta, best)  
-  
+            if oldBest != best:#if the child changes values, return it
+                nodeToReturn = processedNode
+            i = i + 1
             # Alpha Beta Pruning  
             if beta <= alpha:  
                 break 
-           
-        return best  
+                
+        return best, nodeToReturn
        
 # Driver Code  
 if __name__ == "__main__":  
    
     values = [3, 5, 6, 9, 1, 2, 0, -1]   
-    print("The optimal value is :", minimax(0, 0, True, values, MIN, MAX, numberOfChildren - 1))  
-      
+#print("The optimal value is :", minimax(0, 0, True, values, MIN, MAX))       
 # This code is contributed by Rituraj Jain 
 
+def getAllChildren(node, id):
+    children = []
+    for i in range(11):
+        for j in range(11):
+            if node.board[i][j] == 0:
+                newBoard = np.copy(node.board)
+                newBoard[i][j] = id
+                newNode = Node(newBoard, node)
+                children.append(newNode)
+    return children
 def boardValRow(self, board, ID):
     figures2 = []
     figures3 = []
@@ -121,7 +144,6 @@ def boardValRow(self, board, ID):
                                     figure = ((row,col), (row,col + scores - 1))
 
                                 
-                                #FIGURA MOZET BITJ ODNA V DRUGOJ
                         else:
                             break
                 
@@ -205,16 +227,26 @@ def boardValDiag(self, board, ID):
 
 def determineMove(self, board):
     nextMoveCoords = (-1,-1)
-    numOfChildren = 0
-    values = getAllHeuristics(self, board)
-    
-    nextMoveCoords = minimax(0, 0, self.ID, values, MIN, MAX, numOfChildren)
+    #values = getAllHeuristics(self, board)
+    #print(values)
+    node = Node(board, None)
+    heuristic, node = minimax(node, 0, 0, True, MIN, MAX, self)
+    nextboard = node.ancestor.ancestor.board
+    nextMoveCoords = getMoveCoords(self, board, nextboard)
+    #print("BOARS TO BE NEXT: ",node.ancestor.ancestor.board)
 
+    #nextMoveCoords = aplhabeta(self, node, 0, MAX, MIN)
     
     #if not isDecidedMove(nextMoveCoords) and suggestedMoves:
         #nextMoveCoords = suggestedMoves[0]
     return nextMoveCoords
        
+
+class Node:
+    def __init__(self, board, ancestor):
+        self.board = board
+        self.ancestor = ancestor
+        #self.heuristics = getHeuristics(telf, board)
 
 def check4InLine(board, fig4):
     nextMoveCoords = (-1,-1)
@@ -416,14 +448,15 @@ def getHeuristics(self, board):
     finalValueEnemy = 0
     
     if (priorityValid4 or priorityValid3 or priorityValid2):
-
-        VALUE_4 = 100
+        VALUE_5 = 9999
+        VALUE_4 = 1000
         VALUE_3_P = 100
         VALUE_3_N = 25
         VALUE_2_P = 100
         VALUE_2_N = 10
     else:
-        VALUE_4 = 100
+        VALUE_5 = 9999
+        VALUE_4 = 1000
         VALUE_3_P = 100
         VALUE_3_N = 30
         VALUE_2_P = 100
@@ -451,23 +484,56 @@ def getHeuristics(self, board):
     for fig in normalValid2Enemy:
         fig2ValueNEnemy = fig2ValueNEnemy + VALUE_2_N     
 
-    borderValue = border(board)
+    
+
+    borderValue = border(self, board)
     finalValueFig = fig4Value + fig3ValueP + fig3ValueN + fig2ValueP + fig2ValueN
     finalValueFigEnemy = fig4ValueEnemy + fig3ValuePEnemy + fig3ValueNEnemy + fig2ValuePEnemy + fig2ValueNEnemy
     finalValue = finalValueFig + borderValue
     finalValueEnemy = finalValueFigEnemy#SHOULD BE BORDERVALUE, but maybe not??
     
+    if winningTest(self.ID, board, self.X_IN_A_LINE):
+        finalValueFig += VALUE_5
+    if winningTest(self.ID, board, self.X_IN_A_LINE):
+        finalValueFigEnemy += VALUE_5
+
     returnValue = finalValue - finalValueEnemy
     return returnValue
 
-def getAllHeuristics(self, board):
-    
 
-def border(board):
+def getAllHeuristics(self, board):
+    allHeuristics = []
+    newBoardList = []
+    for x in range (self.BOARD_SIZE):
+        for y in range (self.BOARD_SIZE):
+            if board[x][y] == 0:
+
+                newPossibleBoard = np.copy(board)
+                newPossibleBoard[x][y] = self.ID
+                newBoardList.append(newPossibleBoard)
+
+    for brd in newBoardList:
+        for x in range (self.BOARD_SIZE):
+            for y in range (self.BOARD_SIZE):      
+                newPossibleBoard = np.copy(brd)
+                newPossibleBoard[x][y] = -self.ID
+                allHeuristics.append(getHeuristics(self, newPossibleBoard))
+
+    return allHeuristics      
+
+def border(self, board):
     counter = 0
     # (3,3) - (3,7)
     for i in range (3,8):
         for j in range (3,8):
-            if(board[i,j] != 1 and board[i,j] != -1):
-                counter += 1
+            if(board[i,j] == self.ID):
+                if(j == 3 or i == 3 or j == 7 or i == 7):
+                    counter += 1
+    for i in range (4, 7):
+        for j in range (4, 7):
+            if(board[i,j] == self.ID):
+                if(j == 4 or i == 4 or j == 6 or i == 6):
+                    counter += 2
+    if(j == 5 and i == 5):
+        counter += 3
     return counter
