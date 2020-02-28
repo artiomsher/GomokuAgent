@@ -451,14 +451,23 @@ def getHeuristics(self, board):
     for fig in normalValid2Enemy:
         fig2ValueNEnemy = fig2ValueNEnemy + VALUE_2_N     
 
+    borderValue = border(board)
     finalValueFig = fig4Value + fig3ValueP + fig3ValueN + fig2ValueP + fig2ValueN
     finalValueFigEnemy = fig4ValueEnemy + fig3ValuePEnemy + fig3ValueNEnemy + fig2ValuePEnemy + fig2ValueNEnemy
     finalValue = finalValueFig + borderValue
-    finalValueEnemy = finalValueFigEnemy + borderValueEnemy
-
+    finalValueEnemy = finalValueFigEnemy#SHOULD BE BORDERVALUE, but maybe not??
+    
     returnValue = finalValue - finalValueEnemy
     return returnValue
 
 def getAllHeuristics(self, board):
-
     
+
+def border(board):
+    counter = 0
+    # (3,3) - (3,7)
+    for i in range (3,8):
+        for j in range (3,8):
+            if(board[i,j] != 1 and board[i,j] != -1):
+                counter += 1
+    return counter
