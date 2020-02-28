@@ -7,14 +7,15 @@ from gomokuAgent import GomokuAgent
 class Player(GomokuAgent):
     
     def move(self, board):
+
         while True:
             
             print("NOW IS PLAYER ", self.ID, " MOVE!!!\n")
             print(getHeuristics(self, board))
             moveLoc = determineMove(self, board)#COMBINATION OF RANDOM AND NOT RANDOM MOVES
-            if moveLoc == (-1,-1):
+            #if moveLoc == (-1,-1):
                 #print("random move")
-                moveLoc = tuple(np.random.randint(self.BOARD_SIZE, size=2))
+            moveLoc = tuple(np.random.randint(self.BOARD_SIZE, size=2))
             #else:
                 #print("NOT RANDOM MOVE")
                 
@@ -30,7 +31,7 @@ MAX, MIN = 1000, -1000
 numberOfChildren = 2
 # Returns optimal value for current player  
 #(Initially called for root and maximizer)  
-def minimax(depth, nodeIndex, maximizingPlayer,  
+def minimax(depth, nodeIndex, id,  
             values, alpha, beta, numberOfChildren):  
     
     # Terminating condition. i.e  
@@ -38,7 +39,7 @@ def minimax(depth, nodeIndex, maximizingPlayer,
     if depth == 3:  
         return values[nodeIndex]  
   
-    if maximizingPlayer:  
+    if id == 1:  
        
         best = MIN 
   
@@ -46,7 +47,7 @@ def minimax(depth, nodeIndex, maximizingPlayer,
         for i in range(0, numberOfChildren):  
             print(numberOfChildren)
             val = minimax(depth + 1, nodeIndex * 2 + i,  
-                          False, values, alpha, beta, numberOfChildren - 1)  
+                          -1, values, alpha, beta, numberOfChildren - 1)  
             best = max(best, val)  
             alpha = max(alpha, best)  
             
@@ -64,7 +65,7 @@ def minimax(depth, nodeIndex, maximizingPlayer,
         for i in range(0, numberOfChildren):  
             print(numberOfChildren)
             val = minimax(depth + 1, nodeIndex * 2 + i,  
-                            True, values, alpha, beta, numberOfChildren - 1)  
+                            1, values, alpha, beta, numberOfChildren - 1)  
             best = min(best, val)  
             beta = min(beta, best)  
   
@@ -203,22 +204,12 @@ def boardValDiag(self, board, ID):
 
 def determineMove(self, board):
     nextMoveCoords = (-1,-1)
-    suggestedMoves = []
-    ally2, ally3, ally4 = readBoard(self, board, self.ID)
-    enemy2, enemy3, enemy4 = readBoard(self, board, -self.ID)
+    numOfChildren = 0
+    values = [3, 5, 6, 9, 1, 2, 0, -1] 
+    nextMoveCoords = minimax(0, 0, self.ID, values, MIN, MAX, numOfChildren)
 
     
-    if ally4:#DETERMINE LAST MOVE TO WIN IF POSSIBLE
-        nextMoveCoords = check4InLine(board, ally4)
-    if enemy4 and not isDecidedMove(nextMoveCoords):# if the move is not decided yet and enemy can potentially win next move, need to prevent
-        nextMoveCoords = check4InLine(board, enemy4)    
-        #print("Prevented", nextMoveCoords)
-    if ally3 and not isDecidedMove(nextMoveCoords):
-
-        #suggested = checkFigs3(board, ally3)[0]
-        #if isDecidedMove(suggested):
-            #suggestedMoves.append(suggested)   
-        nextMoveCoords = checkFigs3(board, ally3)    
+    
     
     #if not isDecidedMove(nextMoveCoords) and suggestedMoves:
         #nextMoveCoords = suggestedMoves[0]
@@ -383,23 +374,39 @@ def isPotentialWin(board, figures, len, id):
 def getHeuristics(self, board):
     figs2VH, figs3VH, figs4VH = boardValRow(self, board, self.ID)#GET figures of specified player horizonta and vertical
     figs2Diag, figs3Diag, figs4Diag = boardValDiag(self, board, self.ID)#DIagonal
+    figs2VHEnemy, figs3VHEnemy, figs4VHEnemy = boardValRow(self, board, -self.ID)#GET figures of specified player horizonta and vertical
+    figs2DiagEnemy, figs3DiagEnemy, figs4DiagEnemy = boardValDiag(self, board, -self.ID)#DIagonal
     
     figures2 = figs2VH+figs2Diag#combination of vert and horizontal fig, separated by its length
     figures3 = figs3VH+figs3Diag
     figures4 = figs4VH+figs4Diag
+    figures2Enemy = figs2VHEnemy+figs2DiagEnemy#combination of vert and horizontal fig, separated by its length
+    figures3Enemy = figs3VHEnemy+figs3DiagEnemy
+    figures4Enemy = figs4VHEnemy+figs4DiagEnemy
 
     priorityValid2, normalValid2 = isPotentialWin(board, figures2, 2, self.ID)
     priorityValid3, normalValid3 = isPotentialWin(board, figures3, 3, self.ID)
     priorityValid4, normalValid4 = isPotentialWin(board, figures4, 4, self.ID)
+    priorityValid2Enemy, normalValid2Enemy = isPotentialWin(board, figures2, 2, -self.ID)
+    priorityValid3Enemy, normalValid3Enemy = isPotentialWin(board, figures3, 3, -self.ID)
+    priorityValid4Enemy, normalValid4Enemy = isPotentialWin(board, figures4, 4, -self.ID)
 
     #priorityValid = priorityValid4 + priorityValid3 + priorityValid2
     #normalValid = normalValid4 + normalValid3 + normalValid2
-    fig4Value = 0
-    fig3ValueP = 0
-    fig3ValueN = 0
-    fig2ValueP = 0
-    fig2ValueN = 0
-    finalValue = 0
+    fig4Value = 0 
+    fig4ValueEnemy = 0
+    fig3ValueP = 0 
+    fig3ValuePEnemy = 0
+    fig3ValueN = 0 
+    fig3ValueNEnemy = 0
+    fig2ValueP = 0 
+    fig2ValuePEnemy = 0
+    fig2ValueN = 0 
+    fig2ValueNEnemy = 0
+    borderValue = 0 
+    borderValueEnemy = 0
+    finalValue = 0 
+    finalValueEnemy = 0
     
     if (priorityValid4 or priorityValid3 or priorityValid2):
 
@@ -417,15 +424,22 @@ def getHeuristics(self, board):
     
     for fig in priorityValid4:
         fig4Value = fig4Value + VALUE_4
+        fig4ValueEnemy = fig4ValueEnemy + VALUE_4
     for fig in priorityValid3:
-        fig3ValueP = fig3ValueP + VALUE_3_P    
+        fig3ValueP = fig3ValueP + VALUE_3_P 
+        fig3ValuePEnemy = fig3ValuePEnemy + VALUE_3_P 
     for fig in normalValid3:
-        fig3ValueN = fig3ValueN + VALUE_3_N 
+        fig3ValueN = fig3ValueN + VALUE_3_N
+        fig3ValueNEnemy = fig3ValueNEnemy + VALUE_3_N
     for fig in priorityValid2:
         fig2ValueP = fig2ValueP + VALUE_2_P
+        fig2ValuePEnemy = fig2ValuePEnemy + VALUE_2_P
     for fig in normalValid2:
-        fig2ValueN = fig2ValueN + VALUE_2_N        
+        fig2ValueN = fig2ValueN + VALUE_2_N 
+        fig2ValueNEnemy = fig2ValueNEnemy + VALUE_2_N 
 
     finalValueFig = fig4Value + fig3ValueP + fig3ValueN + fig2ValueP + fig2ValueN
-
+    finalValueFigEnemy = fig4ValueEnemy + fig3ValuePEnemy + fig3ValueNEnemy + fig2ValuePEnemy + fig2ValueNEnemy
+    finalValueFig = finalValueFig + borderValue
+    finalValueFigEnemy = finalValueFigEnemy + borderValueEnemy
     return finalValueFig
