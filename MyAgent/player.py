@@ -11,11 +11,12 @@ class Player(GomokuAgent):
         while True:
             
             print("NOW IS PLAYER ", self.ID, " MOVE!!!\n")
-            print(getHeuristics(self, board))
+           
             moveLoc = determineMove(self, board)#COMBINATION OF RANDOM AND NOT RANDOM MOVES
             #if moveLoc == (-1,-1):
                 #print("random move")
             moveLoc = tuple(np.random.randint(self.BOARD_SIZE, size=2))
+            print("NEW CELL ON: ", moveLoc)
             #else:
                 #print("NOT RANDOM MOVE")
                 
@@ -205,11 +206,10 @@ def boardValDiag(self, board, ID):
 def determineMove(self, board):
     nextMoveCoords = (-1,-1)
     numOfChildren = 0
-    values = [3, 5, 6, 9, 1, 2, 0, -1] 
+    values = getAllHeuristics(self, board)
+    
     nextMoveCoords = minimax(0, 0, self.ID, values, MIN, MAX, numOfChildren)
 
-    
-    
     
     #if not isDecidedMove(nextMoveCoords) and suggestedMoves:
         #nextMoveCoords = suggestedMoves[0]
@@ -372,10 +372,17 @@ def isPotentialWin(board, figures, len, id):
     return toReturnPriority, toReturnNormal     
 
 def getHeuristics(self, board):
-    figs2VH, figs3VH, figs4VH = boardValRow(self, board, self.ID)#GET figures of specified player horizonta and vertical
-    figs2Diag, figs3Diag, figs4Diag = boardValDiag(self, board, self.ID)#DIagonal
-    figs2VHEnemy, figs3VHEnemy, figs4VHEnemy = boardValRow(self, board, -self.ID)#GET figures of specified player horizonta and vertical
-    figs2DiagEnemy, figs3DiagEnemy, figs4DiagEnemy = boardValDiag(self, board, -self.ID)#DIagonal
+    allyID = 0
+    if self.ID == 1:
+        allyID = 1
+    else:
+        allyID = -1
+
+
+    figs2VH, figs3VH, figs4VH = boardValRow(self, board, allyID)#GET figures of specified player horizonta and vertical
+    figs2Diag, figs3Diag, figs4Diag = boardValDiag(self, board, allyID)#DIagonal
+    figs2VHEnemy, figs3VHEnemy, figs4VHEnemy = boardValRow(self, board, -allyID)#GET figures of specified player horizonta and vertical
+    figs2DiagEnemy, figs3DiagEnemy, figs4DiagEnemy = boardValDiag(self, board, -allyID)#DIagonal
     
     figures2 = figs2VH+figs2Diag#combination of vert and horizontal fig, separated by its length
     figures3 = figs3VH+figs3Diag
@@ -384,12 +391,12 @@ def getHeuristics(self, board):
     figures3Enemy = figs3VHEnemy+figs3DiagEnemy
     figures4Enemy = figs4VHEnemy+figs4DiagEnemy
 
-    priorityValid2, normalValid2 = isPotentialWin(board, figures2, 2, self.ID)
-    priorityValid3, normalValid3 = isPotentialWin(board, figures3, 3, self.ID)
-    priorityValid4, normalValid4 = isPotentialWin(board, figures4, 4, self.ID)
-    priorityValid2Enemy, normalValid2Enemy = isPotentialWin(board, figures2, 2, -self.ID)
-    priorityValid3Enemy, normalValid3Enemy = isPotentialWin(board, figures3, 3, -self.ID)
-    priorityValid4Enemy, normalValid4Enemy = isPotentialWin(board, figures4, 4, -self.ID)
+    priorityValid2, normalValid2 = isPotentialWin(board, figures2, 2, allyID)
+    priorityValid3, normalValid3 = isPotentialWin(board, figures3, 3, allyID)
+    priorityValid4, normalValid4 = isPotentialWin(board, figures4, 4, allyID)
+    priorityValid2Enemy, normalValid2Enemy = isPotentialWin(board, figures2Enemy, 2, -allyID)
+    priorityValid3Enemy, normalValid3Enemy = isPotentialWin(board, figures3Enemy, 3, -allyID)
+    priorityValid4Enemy, normalValid4Enemy = isPotentialWin(board, figures4Enemy, 4, -allyID)
 
     #priorityValid = priorityValid4 + priorityValid3 + priorityValid2
     #normalValid = normalValid4 + normalValid3 + normalValid2
@@ -424,22 +431,34 @@ def getHeuristics(self, board):
     
     for fig in priorityValid4:
         fig4Value = fig4Value + VALUE_4
-        fig4ValueEnemy = fig4ValueEnemy + VALUE_4
     for fig in priorityValid3:
         fig3ValueP = fig3ValueP + VALUE_3_P 
-        fig3ValuePEnemy = fig3ValuePEnemy + VALUE_3_P 
     for fig in normalValid3:
         fig3ValueN = fig3ValueN + VALUE_3_N
-        fig3ValueNEnemy = fig3ValueNEnemy + VALUE_3_N
     for fig in priorityValid2:
         fig2ValueP = fig2ValueP + VALUE_2_P
-        fig2ValuePEnemy = fig2ValuePEnemy + VALUE_2_P
     for fig in normalValid2:
         fig2ValueN = fig2ValueN + VALUE_2_N 
-        fig2ValueNEnemy = fig2ValueNEnemy + VALUE_2_N 
+
+    for fig in priorityValid4Enemy:
+        fig4ValueEnemy = fig4ValueEnemy + VALUE_4
+    for fig in priorityValid3Enemy:
+        fig3ValuePEnemy = fig3ValuePEnemy + VALUE_3_P 
+    for fig in normalValid3Enemy:
+        fig3ValueNEnemy = fig3ValueNEnemy + VALUE_3_N
+    for fig in priorityValid2Enemy:
+        fig2ValuePEnemy = fig2ValuePEnemy + VALUE_2_P
+    for fig in normalValid2Enemy:
+        fig2ValueNEnemy = fig2ValueNEnemy + VALUE_2_N     
 
     finalValueFig = fig4Value + fig3ValueP + fig3ValueN + fig2ValueP + fig2ValueN
     finalValueFigEnemy = fig4ValueEnemy + fig3ValuePEnemy + fig3ValueNEnemy + fig2ValuePEnemy + fig2ValueNEnemy
-    finalValueFig = finalValueFig + borderValue
-    finalValueFigEnemy = finalValueFigEnemy + borderValueEnemy
-    return finalValueFig
+    finalValue = finalValueFig + borderValue
+    finalValueEnemy = finalValueFigEnemy + borderValueEnemy
+
+    returnValue = finalValue - finalValueEnemy
+    return returnValue
+
+def getAllHeuristics(self, board):
+
+    
