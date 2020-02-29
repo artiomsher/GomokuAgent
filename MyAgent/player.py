@@ -387,27 +387,6 @@ def getHeuristics(self, board):
     returnValue = finalValue - finalValueEnemy
     return returnValue
 
-
-def getAllHeuristics(self, board):
-    allHeuristics = []
-    newBoardList = []
-    for x in range (self.BOARD_SIZE):
-        for y in range (self.BOARD_SIZE):
-            if board[x][y] == 0:
-
-                newPossibleBoard = np.copy(board)
-                newPossibleBoard[x][y] = self.ID
-                newBoardList.append(newPossibleBoard)
-
-    for brd in newBoardList:
-        for x in range (self.BOARD_SIZE):
-            for y in range (self.BOARD_SIZE):      
-                newPossibleBoard = np.copy(brd)
-                newPossibleBoard[x][y] = -self.ID
-                allHeuristics.append(getHeuristics(self, newPossibleBoard))
-
-    return allHeuristics      
-
 def getBorderValue(board, id):#gives values for staying closer to the center - more options to move
     counter = 0
     # (3,3) - (3,7)
