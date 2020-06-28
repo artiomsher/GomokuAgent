@@ -1,3 +1,5 @@
+# Authors: Artiom Serstobitov,
+# Oskars Dervinis
 import numpy as np
 
 from misc import legalMove
